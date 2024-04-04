@@ -2,13 +2,19 @@ import { io } from "socket.io-client";
 
 window.onload = () => {
     const socket = io("http://localhost:4000/");
-    const form = document.querySelector("form");
+    const form = document.querySelector("form#interval");
     const input = document.querySelector("input");
     const button = document.querySelector("button");
-    const dialog = document.querySelector("dialog");
 
-    dialog.addEventListener("click", (ev) => {
-        dialog.close();
+    const dialogSuccess = document.querySelector("dialog#success");
+    const dialogFailure = document.querySelector("dialog#failure");
+
+    dialogSuccess.addEventListener("click", (ev) => {
+        dialogSuccess.close();
+    });
+
+    dialogFailure.addEventListener("click", (ev) => {
+        dialogFailure.close();
     });
 
     form.addEventListener("submit", async (ev) => {
@@ -23,11 +29,21 @@ window.onload = () => {
         button.disabled = true;
     });
 
-    socket.on("message", (data) => {
-        dialog.innerHTML = data;
-        dialog.showModal();
+    socket.on("connect_error", (conn) => {
+        dialogFailure.showModal();
+        socket.disconnect();
         setTimeout(() => {
-            dialog.close();
+            dialogFailure.close();
+        }, 3000000);
+        input.disabled = true;
+        button.disabled = true;
+    });
+
+    socket.on("message", (data) => {
+        dialogSuccess.innerHTML = data;
+        dialogSuccess.showModal();
+        setTimeout(() => {
+            dialogSuccess.close();
         }, 3000);
         input.disabled = false;
         button.disabled = false;
